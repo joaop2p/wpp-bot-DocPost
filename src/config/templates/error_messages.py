@@ -1,0 +1,17 @@
+class ErrorsMessages:
+    NO_COLUMNS_IN_DATA = "Colunas necessárias ausentes."
+    INVALID_PATH_ERR = "Diretório inválido: {path}."
+    DRIVER_CACHE_INVALID = "O caminho do cache '{path}' para o WebDriver não é válido."
+    EXTENSION_NOT_SUPPORTED =  "Tipo de arquivo não reconhecido. As extensões suportadas incluem: .xlsx, .xls, .csv e txt."
+    EMPY_DATA_FRAME = "O DataFrame está vazio. Verifique o arquivo."
+    ERROR_READING_FILE = "Erro ao ler o arquivo: {}."
+    PRINT_ERROR = "Não foi possível imprimir a tela."
+    TYPE_MODEL_ERROR = "O modelo não conseguiu classificar o tipo de carta."
+    FILE_NOT_EXIST = 'O arquivo {file} não existe, verifique o diretório fornecido e tente novamente.'
+    DATA_CRITICAL_ERROR = 'Erro crítico ao ler o arquivo.'
+    NO_FILE_SELECTED = "Nenhum arquivo foi selecionado"
+    PROCESS_CANCELED = 'Operação interrompida pelo usuário.'
+    ATT_IS_NONE = 'O Atributo {attr} está nulo.'
+    NO_MESSAGE_AVAILABLE = "A carta referente ao processo {processo} não está válida."
+    ERROR_LOG = "Ocorreu um erro: {error_message}\nDetalhes: {error_details}"
+    TYPE_RESPONSE_ERROR = "O meio de resposta não foi mapeado anteirormente, verifique os dados do cliente."

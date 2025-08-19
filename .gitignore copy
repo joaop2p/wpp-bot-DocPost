@@ -1,0 +1,7 @@
+.env
+*.ini
+*.sql
+test.py
+.vscode
+.gitignore
+__pycache__
