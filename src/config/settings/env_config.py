@@ -5,5 +5,5 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Variáveis de ambiente com valores padrão
-LOG_PATH = getenv('LOG', './')
+LOG_PATH = getenv('LOG_DIR', './')
 DATABASE_PATH = getenv('DATA_BASE', 'database.sqlite')

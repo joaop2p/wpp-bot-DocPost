@@ -9,7 +9,7 @@ class Selectors:
     FILE_INPUT_IMAGE = Element(By.CSS_SELECTOR, "input[type='file'][accept='image/*']")
     SEND_BUTTON = Element(By.CSS_SELECTOR, "[data-icon='send']")
     SEND_BUTTON2 = Element(By.CSS_SELECTOR, "[data-icon='wds-ic-send-filled']")
-    MESSAGE_BOX = Element(By.CSS_SELECTOR, "div[aria-label='Digite uma mensagem']")
+    MESSAGE_BOX = Element(By.CSS_SELECTOR, "div[aria-placeholder='Digite uma mensagem']")
     MESSAGES_AREA = Element(By.CSS_SELECTOR, 'div[class*="_amkz message-out focusable-list-item _amjy _amjz _amjw"]')
     CHECK = Element(By.CSS_SELECTOR, 'span[aria-label=" Entregue "]')
     BACK = Element(By.CSS_SELECTOR, "span[data-icon='back']")

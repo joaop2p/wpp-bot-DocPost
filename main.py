@@ -1,5 +1,5 @@
-from src.app import WhatsAppBot
+from src.app import App
 
 
 if __name__ == "__main__":
-    WhatsAppBot().run()
+    App().run()

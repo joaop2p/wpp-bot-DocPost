@@ -8,7 +8,7 @@ from .config.logging.log_setup import Log
 from .config.templates.logging_messages import LoggingMessages
 from .config.templates.error_messages import ErrorsMessages
 
-class WhatsAppBot():
+class App():
     def __init__(self) -> None:
         Log.setup()
         self.logger = logging.getLogger(self.__str__())

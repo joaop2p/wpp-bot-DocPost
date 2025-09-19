@@ -27,8 +27,11 @@ class Actions:
 
     def entregue(self) -> bool:
         """Verifica se a última mensagem foi entregue."""
+        sleep(3)
         messages = self.webdriver.find_element(element=Selectors.MESSAGES_AREA, multiples=True)
         if isinstance(messages, list):
+            if not messages:
+                return self.entregue()
             final_message = messages[-1]
             return self.webdriver.await_element(element=Selectors.CHECK, area=final_message, wait=False) is not None
         return False
@@ -44,9 +47,10 @@ class Actions:
         search_area = self.webdriver.await_element(Selectors.SAFE_SEARCH)
         if isinstance(search_area, WebElement):
             search_area.send_keys(str(number))
+            sleep(2)
             search_area.send_keys(Keys.ENTER)
             self._safe_search = True
-            sleep(random.randint(3, 5))
+            sleep(2)
         else:
             raise Exception("Área não encontrada")
 

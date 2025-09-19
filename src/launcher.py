@@ -172,6 +172,7 @@ class Launcher(Data):
         if clients:
             connection = Connection()
             self.actions.start_whatsapp()
+            sleep(20)
             try:
                 for client in clients:
                     self.logger.info(LoggingMessages.CURRENT_CLIENT.format(uc=client.getUC))

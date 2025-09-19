@@ -1,0 +1,1 @@
+df = pd.read_excel("caminho/para/seu/arquivo.xlsx")

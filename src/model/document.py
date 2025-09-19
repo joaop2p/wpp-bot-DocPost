@@ -49,6 +49,8 @@ class Document:
                 self._set_type_advanced()
             case "O":
                 self._set_type_standard()
+            case _:
+                raise ValueError(ErrorsMessages.TYPE_NOT_VALID.format(tipo=tipo))
 
     def read(self) -> bool:
         return self._type_content is not None and self._type_response is not None

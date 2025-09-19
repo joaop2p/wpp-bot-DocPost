@@ -8,7 +8,7 @@ from .env_config import DATABASE_PATH
 class AppConfig(Paths):
     """Classe central de configuração da aplicação."""
 
-    TITLE = 'Carteiro - Danos'
+    TITLE = 'DocPost'
     VERSION = "4.0"
     GENERIC_ERROR_CODE = 1
     SUCCESS_CODE = 0
