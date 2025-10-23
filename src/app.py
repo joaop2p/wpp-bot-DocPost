@@ -39,6 +39,7 @@ class App():
         code = AppConfig.SUCCESS_CODE
         try:
             operation = launcher.wppProcess(AppConfig.DATA_FILE)
+            print(operation)
             if operation is not None:
                 if operation is False:
                     self.action.start_whatsapp()

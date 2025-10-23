@@ -40,5 +40,3 @@ class Search():
         files = listdir(Paths.REPOSITORY_TEMP)
         for process, _ in connection.select():    
             self.search_missing(target=process, process=process, connection=connection, files=files)
-
-    

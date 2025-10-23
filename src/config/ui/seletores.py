@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 class Selectors:
     NEW_CHAT = Element(By.CSS_SELECTOR, "[data-icon='new-chat-outline']")
     SEARCH = Element(By.CSS_SELECTOR, 'div[aria-label="Pesquisar nome ou número"]')
-    ATTACHMENTS = Element(By.CSS_SELECTOR, "button[title='Anexar']")
+    ATTACHMENTS = Element(By.CSS_SELECTOR, "[data-icon='plus-rounded']")
     FILE_INPUT_ALL = Element(By.CSS_SELECTOR, "input[type='file'][accept='*']")
     FILE_INPUT_IMAGE = Element(By.CSS_SELECTOR, "input[type='file'][accept='image/*']")
     SEND_BUTTON = Element(By.CSS_SELECTOR, "[data-icon='send']")

@@ -53,7 +53,7 @@ class Launcher(Data):
             )
         )
 
-    def buildClients(self, df: DataFrame) -> Iterable[Client] | None:
+    def buildClients(self) -> Iterable[Client] | None:
         files = listdir(AppConfig.MAIN_FOLDER)
         processes = FileServices.getProcessFromFiles(files)
         if not processes:
@@ -71,8 +71,15 @@ class Launcher(Data):
             if post is None:
                 continue
             temp_post = join(AppConfig.MAIN_FOLDER, post)
-            document = Document(post_path=temp_post, tipo=row.TIPO_ITEM)
+            document = Document()
+            # try:
+            document.set_type(row.IND_PROC, temp_post, row.TIPO_ITEM)
+            # except Exception as e:
+            #     self.logger.error(ErrorsMessages.DOCUMENT_TYPE_ERROR.format(error_message=str(e)))
+            #     continue
             new_contact = Contact(num1=row.TEL_TRAB_SOLIC, num2=row.CELULAR_SOLIC)
+            # print(document.type_response)
+            # print(document.type_content)
             if document.read():
                 current_client = Client(
                     post=document,
@@ -168,11 +175,12 @@ class Launcher(Data):
 
     def wppProcess(self, base_path: str) -> None | bool:
         self.read(base_path)
-        clients = self.buildClients(self.getData())
+        clients = self.buildClients()
         if clients:
             connection = Connection()
-            self.actions.start_whatsapp()
             sleep(20)
+            self.actions.start_whatsapp()
+            sleep(20000000)
             try:
                 for client in clients:
                     self.logger.info(LoggingMessages.CURRENT_CLIENT.format(uc=client.getUC))
@@ -188,6 +196,7 @@ class Launcher(Data):
                             self.logger.warning(LoggingMessages.FOR_THE_EMAIL)
                         case _:
                             raise Exception(ErrorsMessages.TYPE_RESPONSE_ERROR)
+                sleep(20)
                 return True
             except KeyboardInterrupt:
                 self.logger.warning(ErrorsMessages.PROCESS_CANCELED)

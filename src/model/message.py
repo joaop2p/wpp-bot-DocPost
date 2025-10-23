@@ -23,6 +23,7 @@ class Message:
 
     @staticmethod
     def get_initial_message(type: str) -> str:
+        # print(f"'{type}'")
         match(type):
             case 'request':
                 return "Prezado (a) Cliente, conforme solicitado por V.S.ª que documentos referentes ao processo SR_{processo} fossem enviados através do WhatsApp {telefone}, estamos encaminhando solicitação de documentos necessários para análise/documentação complementar e orientação de envio dos documentos requeridos."
@@ -31,7 +32,7 @@ class Message:
             case 'response':
                 return "Prezado (a) Cliente, conforme solicitado por V.S.ª que documentos referentes ao processo SR_{processo} fossem enviados através do WhatsApp {telefone}, estamos encaminhando Carta Resposta. No caso de discordância deste parecer, V.S.ª poderá formular recurso na Ouvidoria da ENERGISA-PB, pelo telefone (83) 2106-7277), e-mail: ouvidoria-pb@energisa.com.br."
             case _:
-                raise Exception()
+                raise Exception(f"Tipo de mensagem desconhecido {type}")
                 # TODO Implementar exceção personalizada
 
     @property

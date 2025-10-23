@@ -15,8 +15,8 @@ class AppConfig(Paths):
     DATA_BASE_FILE = DATABASE_PATH
     try:
         DATABASE = config['PATH_FILES']['database']
-        DATA_FILE = config['PATH_FILES']['sicde_base_files']
+        DATA_FILE = config.get('PATH_FILES', 'sicde_base_files', fallback='')
         MODEL_LM = config['PATH_FILES']['model_lm']
-        HEADLESS_MODE = bool(int(config['DRIVER']['headless_mode']))
+        HEADLESS_MODE = config.getboolean('DRIVER', 'headless_mode', fallback=True)
     except KeyError as e:
         raise KeyError(f"Erro ao acessar chave de configuração em PATH_FILES: {e}")

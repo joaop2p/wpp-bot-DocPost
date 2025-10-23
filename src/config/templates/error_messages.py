@@ -15,3 +15,6 @@ class ErrorsMessages:
     NO_MESSAGE_AVAILABLE = "A carta referente ao processo {processo} não está válida."
     ERROR_LOG = "Ocorreu um erro: {error_message}\nDetalhes: {error_details}"
     TYPE_RESPONSE_ERROR = "O meio de resposta não foi mapeado anteirormente, verifique os dados do cliente."
+    TYPE_NOT_VALID = "O tipo '{tipo}' não é válido. Os tipos aceitos são 'Elétrico' e 'Sinistro'."
+    FILE_CONTENT_NOT_VALID = "O conteúdo do arquivo {file} não é válido ou está vazio."
+    DOCUMENT_TYPE_ERROR = "Erro ao determinar o tipo do documento: {error_message}"

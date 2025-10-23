@@ -28,4 +28,5 @@ class LoggingMessages:
     SUCCESS_LOG = "Operação concluída com sucesso: {operation_name}\nDetalhes: {details}"
     WARNING_LOG = "Aviso: {warning_message}\nDetalhes: {details}"
     DEBUG_LOG = "Depuração: {debug_message}\nDetalhes: {details}"
+    
     INSERT_SUCCESS = "Registro de envio inserido com sucesso."
