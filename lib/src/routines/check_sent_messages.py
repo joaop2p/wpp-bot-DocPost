@@ -3,10 +3,9 @@ from packages.web.advanced.actions import Actions
 from lib.config import CONFIG
 from lib.src.controls.file_control import FileControl
 from lib.src.controls.package_control import PackageControl
-from lib.src.controls.post_control import PostControl
 from lib.src.models.interfaces.routines import Routine
 from os.path import join
-from packages.files import ProcessesList,File
+from packages.files import ProcessesList
 
 class CheckSentMessages(Routine):
     def __init__(self, actions: Actions) -> None:
@@ -20,13 +19,14 @@ class CheckSentMessages(Routine):
             self.actions.start_whatsapp()
         self.actions.search(num_used)
         result = self.actions.delivered()
-        self.actions.exit_chat_from_message_box()
         if result:
+            self.actions.safe_search(num_process, False)
             self.actions.print_page(num_process)
             self.file_control.move_to_ready(path=file_name)
             self._logger.info('Mensagem entregue com sucesso.')
         else:
             self._logger.info('Mensagem não entregue.')
+        self.actions.exit_chat_from_search()
         return result
 
     def run(self) -> None:

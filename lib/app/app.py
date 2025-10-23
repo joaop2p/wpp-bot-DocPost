@@ -30,8 +30,10 @@ class App:
                 except Exception as e:
                     self.logger.error(f"Erro ao executar a rotina: {e}")
                     code = STATUS.GENERIC_ERROR
+                    break
                 except KeyboardInterrupt:
                     self.logger.info("Processo interrompido pelo usuário.")
                     code = STATUS.INTERRUPTED
+                    break
         self.logger.info(f"Aplicação finalizada. code: {code}")
         return code
