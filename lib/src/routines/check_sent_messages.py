@@ -1,11 +1,10 @@
 import logging
-from packages.web.advanced.actions import Actions
+from mytools.web.advanced.actions import Actions
 from lib.config import CONFIG
 from lib.src.controls.file_control import FileControl
 from lib.src.controls.package_control import PackageControl
 from lib.src.models.interfaces.routines import Routine
-from os.path import join
-from packages.files import ProcessesList
+from mytools.structs.files import ProcessesList
 
 class CheckSentMessages(Routine):
     def __init__(self, actions: Actions) -> None:

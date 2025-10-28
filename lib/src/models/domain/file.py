@@ -10,7 +10,7 @@ from pandas import DataFrame
 from sklearn.linear_model import LogisticRegression
 from win32security import GetFileSecurity, LookupAccountSid, OWNER_SECURITY_INFORMATION
 from ....config.settings import Config
-from packages.files import File as PackageFile
+from mytools.structs.files import File as PackageFile
 from ....config import LOG
 
 logger = logging.getLogger(__name__)

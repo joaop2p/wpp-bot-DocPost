@@ -219,19 +219,24 @@ class Config():
         path = join(r'C:\Users\jpxns3\Logs', DEFAULTS.NAME)
         if not isdir(path):
             mkdir(path)
-        app_handler = logging.FileHandler(join(path, f"{gethostname()}_{datetime.today().strftime('%d%m%Y')}.log"), encoding='utf-8-sig')
+        file_name = join(path, f"{gethostname()}_{datetime.today().strftime('%d%m%Y')}.log")
+        app_handler = logging.FileHandler(file_name, encoding='utf-8-sig')
         app_handler.setLevel(logging.INFO)
-        logging.basicConfig(
-            level=logging.INFO,
-            encoding="utf-8 general",
-            datefmt ='%d-%m-%Y %H:%M:%S',
-            errors='replace',
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            handlers=[
-                app_handler,
-                logging.StreamHandler()
-            ]
+
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        formatter = logging.Formatter(
+            fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%d-%m-%Y %H:%M:%S'
         )
+        app_handler.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
+
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
+        root.handlers.clear()
+        root.addHandler(app_handler)
+        root.addHandler(console_handler)
 
     def _load_configs(self):
         """Carrega todas as configurações dos arquivos."""

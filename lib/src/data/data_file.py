@@ -2,7 +2,7 @@ from pandas import DataFrame, Series, read_table, Grouper
 from os.path import exists
 from ..models.domain.client import Client
 from ...config import SYS_MSG
-from packages.files import ProcessesList
+from mytools.structs.files import ProcessesList
 
 class DataFile:
     _df: DataFrame

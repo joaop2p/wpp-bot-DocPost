@@ -2,8 +2,8 @@ import logging
 from time import sleep
 import traceback
 from typing import Callable, Literal
-from packages.web.advanced.actions import Actions
-from packages.files import ProcessesList, Process
+from mytools.web.advanced.actions import Actions
+from mytools.structs.files import ProcessesList, Process
 from lib.src.controls.file_control import FileControl
 from lib.src.controls.ignore_control import IgnoreControl
 from lib.src.controls.package_control import PackageControl
@@ -125,13 +125,13 @@ class Despatch(Routine):
     # Tipos de envio de mensagens
     def _default_handle(self, client: Client):
         self._send_initial_message(client)
-        sleep(randint(*self._SHORT_LENGTH))
+        sleep(randint(2,4))
         self._send_files(client)
-        sleep(randint(*self._SHORT_LENGTH))
+        sleep(randint(2,4))
         delivered = self._delivery_register(client)
         if delivered:
             client.set_delivered(True)
-        sleep(randint(*self._SHORT_LENGTH))
+        sleep(randint(2,4))
         self._send_final_message(client)
 
     def _alternative_handle(self, client: Client) -> None:
