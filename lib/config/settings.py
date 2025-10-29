@@ -221,8 +221,9 @@ class Config():
             mkdir(path)
         file_name = join(path, f"{gethostname()}_{datetime.today().strftime('%d%m%Y')}.log")
         app_handler = logging.FileHandler(file_name, encoding='utf-8-sig')
+        error_handler = logging.FileHandler(f"{file_name}_error.log", encoding='utf-8-sig')
         app_handler.setLevel(logging.INFO)
-
+        error_handler.setLevel(logging.ERROR)
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.INFO)
         formatter = logging.Formatter(
@@ -236,6 +237,7 @@ class Config():
         root.setLevel(logging.DEBUG)
         root.handlers.clear()
         root.addHandler(app_handler)
+        root.addHandler(error_handler)
         root.addHandler(console_handler)
 
     def _load_configs(self):

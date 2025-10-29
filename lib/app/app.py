@@ -3,7 +3,7 @@ from lib.config import STATUS
 from lib.src.models.interfaces.routines import Routine
 from lib.src.routines.check_sent_messages import CheckSentMessages
 from ..src.routines.despatch import Despatch
-from packages.web.advanced.actions import Actions
+from mytools.web.advanced.actions import Actions
 from ..config import CONFIG, DEFAULTS
 
 class App:
@@ -29,6 +29,7 @@ class App:
                     routine.run()
                 except Exception as e:
                     self.logger.error(f"Erro ao executar a rotina: {e}")
+                    self.logger.error("Detalhes do erro:", exc_info=True)
                     code = STATUS.GENERIC_ERROR
                     break
                 except KeyboardInterrupt:

@@ -242,4 +242,3 @@ class Despatch(Routine):
         self.actions.start_whatsapp()
         self._send_messages(clients)
         self.logger.info("Rotina de despacho de mensagens finalizada.")
-        

@@ -13,11 +13,13 @@ from ....config.settings import Config
 from mytools.structs.files import File as PackageFile
 from ....config import LOG
 
-logger = logging.getLogger(__name__)
+
 
 # Tipagem auxiliar para o retorno do tipo de conteúdo
 ContentTypeResponse = Tuple[Literal['response', 'request', 'request+'], str]
 
+
+logger = logging.getLogger('File')
 
 class File:
     """Representa um arquivo a ser classificado e interpretado.
@@ -27,7 +29,6 @@ class File:
     - Classificar o tipo via modelo de ML (E) ou via regras (O)
     - Determinar o tipo de resposta / conteúdo
     """
-
     # Configuração e constantes
     MIN_CONTENT_LENGTH = 30
 
@@ -102,7 +103,7 @@ class File:
 
     @classmethod
     def new_file(cls, status: str, file: PackageFile, type_process: Literal['E', 'O']) -> 'File':
-        logger.debug(LOG.FILE_PROCESSING, {"file_path": file.directory})
+        logger.debug(LOG.FILE_PROCESSING, {"file_path": file.name})
 
         path = file.directory
         if not path or not exists(path) or not isfile(path):
