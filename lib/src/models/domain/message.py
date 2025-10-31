@@ -23,11 +23,11 @@ class Message:
     def get_initial_message(self, processo: int, telefone: str) -> str:
         match(self._message_type):
             case 'request':
-                return f"Prezado (a) Cliente, conforme solicitado por V.S.ª que documentos referentes ao processo SR_{processo} fossem enviados através do WhatsApp {telefone}, estamos encaminhando solicitação de documentos necessários para análise/documentação complementar e orientação de envio dos documentos requeridos."
+                return f"Prezado (a) Cliente, conforme solicitado por V.S.ª que documentos referentes ao processo de danos elétricos Nº {processo} fossem enviados através do WhatsApp {telefone}, estamos encaminhando solicitação de documentos necessários para análise/documentação complementar e orientação de envio dos documentos requeridos."
             case 'request+':
                 return f"Prezado (a) consumidor (a). Analisamos a documentação entregue acerca do seu pedido de ressarcimento, para dar andamento a sua solicitação, se faz necessário a entrega do (s) equipamento (s) ou peça (s) solicitado (s) na carta em anexo e Orientação do envio da Carta do Recolhimento referente ao processo {processo}"
             case 'response':
-                return f"Prezado (a) Cliente, conforme solicitado por V.S.ª que documentos referentes ao processo SR_{processo} fossem enviados através do WhatsApp {telefone}, estamos encaminhando Carta Resposta. No caso de discordância deste parecer, V.S.ª poderá formular recurso na Ouvidoria da ENERGISA-PB, pelo telefone (83) 2106-7277), e-mail: ouvidoria-pb@energisa.com.br."
+                return f"Prezado (a) Cliente, conforme solicitado por V.S.ª que documentos referentes ao processo de danos elétricos Nº {processo} fossem enviados através do WhatsApp {telefone}, estamos encaminhando Carta Resposta. No caso de discordância deste parecer, V.S.ª poderá formular recurso na Ouvidoria da ENERGISA-PB, pelo telefone (83) 2106-7277), e-mail: ouvidoria-pb@energisa.com.br."
             case _:
                 raise Exception(f"Tipo de mensagem desconhecido {type}")
 
