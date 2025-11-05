@@ -2,7 +2,8 @@ import logging
 from time import sleep
 import traceback
 from typing import Callable, Literal
-from mytools.web.advanced.actions import Actions
+# from mytools.web.advanced.actions import Actions
+from mytools.PyZapp.advanced.actions_v2 import Actions, ActionsConfig
 from mytools.structs.files import ProcessesList, Process
 from lib.src.controls.file_control import FileControl
 from lib.src.controls.ignore_control import IgnoreControl
@@ -24,19 +25,20 @@ class Despatch(Routine):
     _post_control: PostControl
     _package_control: PackageControl
     _file_control: FileControl
-    _SHORT_LENGTH = [0.5, 2]
+    _MIN_TIME = 1
+    _MAX_TIME = 3
 
-    def __init__(self, actions: Actions) -> None:
+    def __init__(self, config: ActionsConfig) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self._post_control = PostControl()
         self._package_control = PackageControl()
         self._file_control = FileControl()
-        self.actions = actions
+        self.config = config
 
-    def _start_chat(self, number: int | None) -> int | None:
+    def _start_chat(self, action: Actions, number: int | None) -> int | None:
         if number is None or number == 0:
             return
-        elif not self.actions.search(number):
+        elif not action.search(number):
             return
         return number
 
@@ -51,10 +53,10 @@ class Despatch(Routine):
                 self.logger.debug("Erro durante wait_until: %s", e)
             if monotonic() - start >= timeout:
                 return False
-            sleep(interval)
+            self._await(interval)
 
-    def _wait_for_delivery(self, timeout: float = 30.0) -> bool:
-        ok = self._wait_until(lambda: bool(self.actions.delivered()), timeout=timeout, interval=0.5)
+    def _wait_for_delivery(self, action: Actions, timeout: float = 30.0) -> bool:
+        ok = self._wait_until(lambda: bool(action.delivered()), timeout=timeout, interval=0.5)
         if ok:
             self.logger.info("Entrega confirmada dentro do timeout.")
         else:
@@ -62,21 +64,21 @@ class Despatch(Routine):
         return ok
     
     # Ações básicas de envio de mensagens e arquivos
-    def _send_final_message(self, client: Client) -> None:
+    def _send_final_message(self, action: Actions, client: Client) -> None:
         for message in client.message.get_final_messages():
-            self.actions.send_message(message)
-            sleep(0.5)
+            action.send_message(message)
+            self._await(0.5)
 
-    def _send_files(self, client: Client) -> None:
-        self.actions.send_file(client.file.post_path)
+    def _send_files(self, action: Actions, client: Client) -> None:
+        action.send_file(client.file.post_path)
         match client.message.message_type:
             case 'request':
-               self.actions.send_file(CONFIG.path.guia)
+               action.send_file(CONFIG.path.guia)
             case 'request+':
-               self.actions.send_file(CONFIG.path.guia_rec)
+               action.send_file(CONFIG.path.guia_rec)
 
-    def _send_initial_message(self, client: Client) -> None:
-        self.actions.send_message(
+    def _send_initial_message(self, action: Actions, client: Client) -> None:
+        action.send_message(
             client.message.get_initial_message(
                 processo=client.process,
                 telefone=Contact.format_tel(
@@ -85,12 +87,12 @@ class Despatch(Routine):
             )
         )
 
-    def _delivery_register(self, client: Client) -> bool:
-        status = self._wait_for_delivery(timeout=60.0)
+    def _delivery_register(self, action: Actions, client: Client) -> bool:
+        status = self._wait_for_delivery(action, timeout=60.0)
         if status:
             self.logger.info("Mensagem entregue com sucesso.")
-            self.actions.safe_search(client.process, False)
-            self.actions.print_page(client.process)
+            action.safe_search(client.process, False)
+            action.print_page(client.process)
         else:
             self.logger.warning("Mensagem enviada mas não entregue.")
         return status
@@ -108,6 +110,12 @@ class Despatch(Routine):
             self.logger.warning("Cliente incompleto: %s", client)
             return None
         return client
+    
+    def _await(self, time: int | float | None = None) -> None:
+        if time is not None:
+            sleep(time)
+        else:
+            sleep(randint(self._MIN_TIME, self._MAX_TIME))
 
     def build_clients(self, processes: ProcessesList, data: DataFile) -> list[Client]:
         clients: list[Client] = []
@@ -123,19 +131,19 @@ class Despatch(Routine):
         return clients
     
     # Tipos de envio de mensagens
-    def _default_handle(self, client: Client):
-        self._send_initial_message(client)
-        sleep(randint(2,4))
-        self._send_files(client)
-        sleep(randint(2,4))
-        delivered = self._delivery_register(client)
+    def _default_handle(self, action: Actions, client: Client) -> None:
+        self._send_initial_message(action, client)
+        self._await()
+        self._send_files(action, client)
+        self._await()
+        delivered = self._delivery_register(action, client)
         if delivered:
             client.set_delivered(True)
-        sleep(randint(2,4))
-        self._send_final_message(client)
+        self._await()
+        self._send_final_message(action, client)
 
-    def _alternative_handle(self, client: Client) -> None:
-        self.actions.send_message(
+    def _alternative_handle(self, action: Actions, client: Client) -> None:
+        action.send_message(
             client.message.get_ag_message(
                 processo=client.process,
                 telefone=Contact.format_tel(tel=client.first_num), 
@@ -144,7 +152,7 @@ class Despatch(Routine):
         )
     
     # Controlador de envio de mensagens
-    def _send_message(self, client: Client, ignore: bool) -> Literal['T', 'A', 'E'] | None:
+    def _send_message(self, action: Actions, client: Client, ignore: bool) -> Literal['T', 'A', 'E'] | None:
         # Se modo de resposta for E-mail, não iniciar chat
         if client.response_mode == 'E':
             self.logger.info("Cliente deve receber a carta via E-mail.")
@@ -157,7 +165,7 @@ class Despatch(Routine):
         try:
             # Tentar iniciar chat com os números disponíveis
             for number in (client.first_num, client.second_num):
-                if self._start_chat(number) not in (None, 0):
+                if self._start_chat(action, number) not in (None, 0):
                     selected_number = number
                     break
 
@@ -168,14 +176,14 @@ class Despatch(Routine):
             self.logger.info("Número selecionado: %d", selected_number)
             match client.response_mode:
                 case 'T':
-                    self._default_handle(client)
+                    self._default_handle(action, client)
                     if client.delivered:
                         self._file_control.move_to_ready(client.file)
                     else:
                         self._file_control.move_to_pending(client.file)
                     return 'T'
                 case 'A':
-                    self._alternative_handle(client)
+                    self._alternative_handle(action, client)
                     self._file_control.move_to_ag(client.file)
                     return 'A'
                 case _:
@@ -186,48 +194,47 @@ class Despatch(Routine):
             self.logger.debug("Traceback: %s", traceback.format_exc())
             return None
         finally:
-            self.actions.exit_chat_from_message_box()
+            action.close_chat()
 
     def _send_messages(self, clients: list[Client]) -> None:
         ignore_set = {ignore.client for ignore in IgnoreControl().get_all_ignores()}
-        for client in clients:
-            self.logger.info("Cliente atual: %s", client)
-            mode = self._send_message(client, ignore=(client.process in ignore_set))
-            try:
-                if mode is None:
-                    self.logger.warning("Envio não realizado para o cliente: %s", client)
-                    continue
-                match mode:
-                    case 'T':
-                        package_mode: Literal['default', 'secondary'] = 'default'
-                    case 'A':
-                        package_mode = 'secondary'
-                    case 'E':
-                        self.logger.info("Cliente deve receber a carta via E-mail.")
+        with Actions(self.config) as action:
+            for client in clients:
+                self.logger.info("Cliente atual: %s", client)
+                mode = self._send_message(action, client, ignore=(client.process in ignore_set))
+                try:
+                    if mode is None:
+                        self.logger.warning("Envio não realizado para o cliente: %s", client)
                         continue
-                    case _:
-                        self.logger.warning("Modo de envio inválido para o cliente: %s", client)
-                        continue
-                post = self._post_control.fetch_post(client)
-                if post:
-                    self.logger.info("Carta já enviada anteriormente para o cliente: %s", client)
-                    post.file_name = client.file.name
-                    self.logger.info("Atualizando nome do arquivo no post: %s", post)
-                else:
-                    self.logger.info("Criando novo post para o cliente: %s", client)
-                    post = self._post_control.create_post_by_client(client)
-                self._post_control.create_post(post)
-                self.logger.info("Post registrado com sucesso: %s", post)
-                self._package_control.insert_package_from_client(client, package_mode)
-                self.logger.info("Mensagem processada para o cliente: %s", client)
-            except Exception as exc:
-                self.logger.error("Erro ao processar pós-envio para o cliente %s: %s", client, exc)
-                self.logger.debug("Traceback: %s", traceback.format_exc())
+                    match mode:
+                        case 'T':
+                            package_mode: Literal['default', 'secondary'] = 'default'
+                        case 'A':
+                            package_mode = 'secondary'
+                        case 'E':
+                            self.logger.info("Cliente deve receber a carta via E-mail.")
+                            continue
+                        case _:
+                            self.logger.warning("Modo de envio inválido para o cliente: %s", client)
+                            continue
+                    post = self._post_control.fetch_post(client)
+                    if post:
+                        self.logger.info("Carta já enviada anteriormente para o cliente: %s", client)
+                        post.file_name = client.file.name
+                        self.logger.info("Atualizando nome do arquivo no post: %s", post)
+                    else:
+                        self.logger.info("Criando novo post para o cliente: %s", client)
+                        post = self._post_control.create_post_by_client(client)
+                    self._post_control.create_post(post)
+                    self.logger.info("Post registrado com sucesso: %s", post)
+                    self._package_control.insert_package_from_client(client, package_mode)
+                    self.logger.info("Mensagem processada para o cliente: %s", client)
+                except Exception as exc:
+                    self.logger.error("Erro ao processar pós-envio para o cliente %s: %s", client, exc)
+                    self.logger.debug("Traceback: %s", traceback.format_exc())
 
-    # Execução do launcher
     def run(self) -> None:
         self.logger.info("Iniciando rotina de despacho de mensagens...")
-        # path = r'\\fileserverpb.scl.corp\Dados\SGP\02.Processos\06.Gestão de Danos Elétricos\06. Processos Dgital\Cartas Pedentes de Envio\Nova pasta'
         processes_list = ProcessesList.from_directory(CONFIG.path.main_folder)
         self.logger.info("Processos encontrados: %s", processes_list)
         data = DataFile.from_data(CONFIG.data_file, processes_list)
@@ -239,6 +246,5 @@ class Despatch(Routine):
             return
         self.logger.info("Pacotes construídos com sucesso. Total de pacotes: %d", len(clients))
         self.logger.info("Iniciando envio de mensagens via WhatsApp Web.")
-        self.actions.start_whatsapp()
         self._send_messages(clients)
         self.logger.info("Rotina de despacho de mensagens finalizada.")
