@@ -216,9 +216,9 @@ class Config():
         self._logging_config()
 
     def _logging_config(self) -> None:
-        path = join(r'C:\Users\jpxns3\Logs', DEFAULTS.NAME)
+        path = join(self._path_config.log_dir, DEFAULTS.NAME)
         if not isdir(path):
-            mkdir(path)
+            makedirs(path, exist_ok=True)
         file_name = join(path, f"{gethostname()}_{datetime.today().strftime('%d%m%Y')}.log")
         app_handler = logging.FileHandler(file_name, encoding='utf-8-sig')
         error_handler = logging.FileHandler(f"{file_name}_error.log", encoding='utf-8-sig')
