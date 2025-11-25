@@ -16,6 +16,7 @@ from ..models.domain.file import File
 from ..models.domain.message import Message
 from ...config import CONFIG
 from ..models.domain.contact import Contact
+from ..utils.generic import ExceptionsMessages
 from time import monotonic
 from random import randint
 
@@ -50,7 +51,7 @@ class Despatch(Routine):
                 if check():
                     return True
             except Exception as e:
-                self.logger.debug("Erro durante wait_until: %s", e)
+                self.logger.debug(ExceptionsMessages.ERRO_WAIT_UNTIL, e)
             if monotonic() - start >= timeout:
                 return False
             self._await(interval)
@@ -58,9 +59,9 @@ class Despatch(Routine):
     def _wait_for_delivery(self, action: Actions, timeout: float = 30.0) -> bool:
         ok = self._wait_until(lambda: bool(action.delivered()), timeout=timeout, interval=0.5)
         if ok:
-            self.logger.info("Entrega confirmada dentro do timeout.")
+            self.logger.info(ExceptionsMessages.ENTREGA_CONFIRMADA)
         else:
-            self.logger.warning("Entrega não confirmada dentro do timeout de %.1fs.", timeout)
+            self.logger.warning(ExceptionsMessages.ENTREGA_NAO_CONFIRMADA, timeout)
         return ok
     
     # Ações básicas de envio de mensagens e arquivos
@@ -90,11 +91,11 @@ class Despatch(Routine):
     def _delivery_register(self, action: Actions, client: Client) -> bool:
         status = self._wait_for_delivery(action, timeout=60.0)
         if status:
-            self.logger.info("Mensagem entregue com sucesso.")
+            self.logger.info(ExceptionsMessages.MENSAGEM_ENTREGUE_SUCESSO)
             action.safe_search(client.process, False)
             action.print_page(client.process)
         else:
-            self.logger.warning("Mensagem enviada mas não entregue.")
+            self.logger.warning(ExceptionsMessages.MENSAGEM_ENVIADA_NAO_ENTREGUE)
         return status
 
     # Construção de clientes a partir dos processos e dados
@@ -107,7 +108,7 @@ class Despatch(Routine):
         client.set_file(file)
         client.set_message(message)
         if not client.ready():
-            self.logger.warning("Cliente incompleto: %s", client)
+            self.logger.warning(ExceptionsMessages.CLIENTE_INCOMPLETO, client)
             return None
         return client
     
@@ -125,7 +126,7 @@ class Despatch(Routine):
                 if client is None:
                     continue
             except Exception as e:
-                self.logger.error("Erro ao construir cliente: %s", e)
+                self.logger.error(ExceptionsMessages.ERRO_CONSTRUIR_CLIENTE, e)
                 continue
             clients.append(client)
         return clients
@@ -155,10 +156,10 @@ class Despatch(Routine):
     def _send_message(self, action: Actions, client: Client, ignore: bool) -> Literal['T', 'A', 'E'] | None:
         # Se modo de resposta for E-mail, não iniciar chat
         if client.response_mode == 'E':
-            self.logger.info("Cliente deve receber a carta via E-mail.")
+            self.logger.info(ExceptionsMessages.CLIENTE_RECEBE_EMAIL)
             return 'E'
         elif ignore:
-            self.logger.info("Cliente está na lista de ignore, pulando envio de mensagem.")
+            self.logger.info(ExceptionsMessages.CLIENTE_NA_IGNORE_LIST)
             self._file_control.move_to_ag(client.file)
             return 'A'
         selected_number: int | None = None
@@ -170,10 +171,10 @@ class Despatch(Routine):
                     break
 
             if selected_number is None:
-                self.logger.warning("Não foi possível iniciar o chat para o cliente: %s", client)
+                self.logger.warning(ExceptionsMessages.NAO_POSSIVEL_INICIAR_CHAT, client)
                 return 'A'
             client.set_used(selected_number)
-            self.logger.info("Número selecionado: %d", selected_number)
+            self.logger.info(ExceptionsMessages.NUMERO_SELECIONADO, selected_number)
             match client.response_mode:
                 case 'T':
                     self._default_handle(action, client)
@@ -187,11 +188,11 @@ class Despatch(Routine):
                     self._file_control.move_to_ag(client.file)
                     return 'A'
                 case _:
-                    self.logger.warning("Modo de resposta desconhecido para o cliente: %s", client)
+                    self.logger.warning(ExceptionsMessages.MODO_RESPOSTA_DESCONHECIDO, client)
                     return 'A'
         except Exception as exc:
-            self.logger.error("Erro ao enviar mensagem para o cliente %s: %s", client, exc)
-            self.logger.debug("Traceback: %s", traceback.format_exc())
+            self.logger.error(ExceptionsMessages.ERRO_ENVIAR_MENSAGEM, client, exc)
+            self.logger.debug(ExceptionsMessages.TRACEBACK, traceback.format_exc())
             return None
         finally:
             action.close_chat()
@@ -200,11 +201,11 @@ class Despatch(Routine):
         ignore_set = {ignore.client for ignore in IgnoreControl().get_all_ignores()}
         with Actions(self.config) as action:
             for client in clients:
-                self.logger.info("Cliente atual: %s", client)
+                self.logger.info(ExceptionsMessages.CLIENTE_ATUAL, client)
                 mode = self._send_message(action, client, ignore=(client.process in ignore_set))
                 try:
                     if mode is None:
-                        self.logger.warning("Envio não realizado para o cliente: %s", client)
+                        self.logger.warning(ExceptionsMessages.ENVIO_NAO_REALIZADO, client)
                         continue
                     match mode:
                         case 'T':
@@ -212,39 +213,39 @@ class Despatch(Routine):
                         case 'A':
                             package_mode = 'secondary'
                         case 'E':
-                            self.logger.info("Cliente deve receber a carta via E-mail.")
+                            self.logger.info(ExceptionsMessages.CLIENTE_RECEBE_EMAIL)
                             continue
                         case _:
-                            self.logger.warning("Modo de envio inválido para o cliente: %s", client)
+                            self.logger.warning(ExceptionsMessages.MODO_ENVIO_INVALIDO, client)
                             continue
                     post = self._post_control.fetch_post(client)
                     if post:
-                        self.logger.info("Carta já enviada anteriormente para o cliente: %s", client)
+                        self.logger.info(ExceptionsMessages.CARTA_JA_ENVIADA, client)
                         post.file_name = client.file.name
-                        self.logger.info("Atualizando nome do arquivo no post: %s", post)
+                        self.logger.info(ExceptionsMessages.ATUALIZANDO_NOME_ARQUIVO, post)
                     else:
-                        self.logger.info("Criando novo post para o cliente: %s", client)
+                        self.logger.info(ExceptionsMessages.CRIANDO_NOVO_POST, client)
                         post = self._post_control.create_post_by_client(client)
                     self._post_control.create_post(post)
-                    self.logger.info("Post registrado com sucesso: %s", post)
+                    self.logger.info(ExceptionsMessages.POST_REGISTRADO_SUCESSO, post)
                     self._package_control.insert_package_from_client(client, package_mode)
-                    self.logger.info("Mensagem processada para o cliente: %s", client)
+                    self.logger.info(ExceptionsMessages.MENSAGEM_PROCESSADA, client)
                 except Exception as exc:
-                    self.logger.error("Erro ao processar pós-envio para o cliente %s: %s", client, exc)
-                    self.logger.debug("Traceback: %s", traceback.format_exc())
+                    self.logger.error(ExceptionsMessages.ERRO_PROCESSAR_POS_ENVIO, client, exc)
+                    self.logger.debug(ExceptionsMessages.TRACEBACK, traceback.format_exc())
 
     def run(self) -> None:
-        self.logger.info("Iniciando rotina de despacho de mensagens...")
+        self.logger.info(ExceptionsMessages.INICIANDO_ROTINA_DESPACHO)
         processes_list = ProcessesList.from_directory(CONFIG.path.main_folder)
-        self.logger.info("Processos encontrados: %s", processes_list)
+        self.logger.info(ExceptionsMessages.PROCESSOS_ENCONTRADOS, processes_list)
         data = DataFile.from_data(CONFIG.data_file, processes_list)
-        self.logger.info("Dados carregados.")
-        self.logger.info("Construíndo pacotes de envio.")
+        self.logger.info(ExceptionsMessages.DADOS_CARREGADOS)
+        self.logger.info(ExceptionsMessages.CONSTRUINDO_PACOTES)
         clients = self.build_clients(processes_list, data)
         if not clients:
-            self.logger.info("Nenhuma pacote para enviar.")
+            self.logger.info(ExceptionsMessages.NENHUM_PACOTE_ENVIAR)
             return
-        self.logger.info("Pacotes construídos com sucesso. Total de pacotes: %d", len(clients))
-        self.logger.info("Iniciando envio de mensagens via WhatsApp Web.")
+        self.logger.info(ExceptionsMessages.PACOTES_CONSTRUIDOS_SUCESSO, len(clients))
+        self.logger.info(ExceptionsMessages.INICIANDO_ENVIO_MENSAGENS)
         self._send_messages(clients)
-        self.logger.info("Rotina de despacho de mensagens finalizada.")
+        self.logger.info(ExceptionsMessages.ROTINA_DESPACHO_FINALIZADA)

@@ -5,6 +5,7 @@ from lib.config import CONFIG
 from lib.src.controls.file_control import FileControl
 from lib.src.controls.package_control import PackageControl
 from lib.src.models.interfaces.routines import Routine
+from lib.src.utils.generic import ExceptionsMessages
 from mytools.structs.files import ProcessesList
 
 class CheckSentMessages(Routine):
@@ -14,7 +15,7 @@ class CheckSentMessages(Routine):
         self._logger = logging.getLogger(self.__class__.__name__)
 
     def _check_message_delivered(self, action: Actions, num_used: int, num_process: int, file_name: str) -> bool:
-        self._logger.info(f'Verificando se a mensagem do processo {num_process} foi entregue...')
+        self._logger.info(ExceptionsMessages.VERIFICANDO_MENSAGEM_ENTREGUE, num_process)
         if not action.wpp_started:
             action.start_whatsapp()
         action.search(num_used)
@@ -23,9 +24,9 @@ class CheckSentMessages(Routine):
             action.safe_search(num_process, False)
             action.print_page(num_process)
             self.file_control.move_to_ready(path=file_name)
-            self._logger.info('Mensagem entregue com sucesso.')
+            self._logger.info(ExceptionsMessages.MENSAGEM_ENTREGUE_SUCESSO)
         else:
-            self._logger.info('Mensagem não entregue.')
+            self._logger.info(ExceptionsMessages.MENSAGEM_NAO_ENTREGUE)
         action.close_chat()
         return result
 
@@ -34,7 +35,7 @@ class CheckSentMessages(Routine):
         pending = package_control.fetch_pending_package()
         process_list = ProcessesList.from_directory(CONFIG.path.repository_temp)
         if not pending:
-            self._logger.info('Nenhum pacote pendente encontrado.')
+            self._logger.info(ExceptionsMessages.NENHUM_PACOTE_PENDENTE)
             return
         with Actions(self.config) as actions:
             for item in pending:
@@ -43,4 +44,4 @@ class CheckSentMessages(Routine):
                     if self._check_message_delivered(actions, item.num_used, item.process_id, process.files[0].directory):
                         item.delivered = True
                         package_control.insert_package(item)
-        self._logger.info('Rotina finalizada.')
+        self._logger.info(ExceptionsMessages.ROTINA_FINALIZADA)
