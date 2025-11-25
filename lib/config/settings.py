@@ -87,7 +87,11 @@ class PathConfig(ConfigTemplate):
 
     def __init__(self) -> None:
         load_dotenv()
-        self._log_dir = getenv('LOG_DIR', rf'C:\Users\{getlogin()}\Logs\DocPost')
+        try:
+            user = getlogin()
+        except (FileNotFoundError, OSError):
+            user = getuser() or getenv('USERNAME', 'unknown')
+        self._log_dir = getenv('LOG_DIR', rf'C:\Users\{user}\Logs\DocPost')
         try:
             makedirs(self._log_dir, exist_ok=True)
         except Exception as e:
@@ -216,9 +220,9 @@ class Config():
         self._logging_config()
 
     def _logging_config(self) -> None:
-        path = join(r'C:\Users\jpxns3\Logs', DEFAULTS.NAME)
+        path = self._path_config.log_dir
         if not isdir(path):
-            mkdir(path)
+            makedirs(path, exist_ok=True)
         file_name = join(path, f"{gethostname()}_{datetime.today().strftime('%d%m%Y')}.log")
         app_handler = logging.FileHandler(file_name, encoding='utf-8-sig')
         error_handler = logging.FileHandler(f"{file_name}_error.log", encoding='utf-8-sig')

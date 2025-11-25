@@ -9,3 +9,6 @@ __pycache__
 cache
 repository
 config.ini
+data/
+models/
+logs/
