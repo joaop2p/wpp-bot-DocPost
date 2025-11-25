@@ -4,10 +4,10 @@ from ..models.db.packages import AgPackage, WppPackage
 
 class PackageService:
     def __init__(self) -> None:
-        self._package_respository = PackagesRepository()
+        self._package_repository = PackagesRepository()
 
     def create_new_item(self, package: AgPackage | WppPackage):
-        self._package_respository.create_new(package)
+        self._package_repository.create_new(package)
 
     def fetch_pending_items(self) -> Iterable[WppPackage] | None:
-        return self._package_respository.fetch_pendings()
+        return self._package_repository.fetch_pendings()

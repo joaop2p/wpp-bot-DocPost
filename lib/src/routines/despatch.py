@@ -239,7 +239,7 @@ class Despatch(Routine):
         self.logger.info("Processos encontrados: %s", processes_list)
         data = DataFile.from_data(CONFIG.data_file, processes_list)
         self.logger.info("Dados carregados.")
-        self.logger.info("Construíndo pacotes de envio.")
+        self.logger.info("Construindo pacotes de envio.")
         clients = self.build_clients(processes_list, data)
         if not clients:
             self.logger.info("Nenhuma pacote para enviar.")
