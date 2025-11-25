@@ -1,0 +1,33 @@
+# Example configuration file for wpp-bot-DocPost
+# Copy this file to config.ini and adjust the paths for your environment
+
+[DRIVER]
+# Run Chrome in headless mode (without visible window)
+headless_mode = true
+# Path to store browser driver cache
+driver_cache = ./cache
+
+[PATH_FOLDER]
+# Main folder where documents are stored
+main_folder = ./repository
+# Subdirectories for different file types
+repository_jpg = jpg
+repository_pdf = pdf
+awaiting_queue = temp
+dist_files_not_sended_folder = not_sended
+dist_files_sended = sended
+
+[PATH_FILES]
+# Database file path
+database = ./data/data.db
+# Main data file (Excel format)
+sicde_base_files = ./data/data.xlsx
+# Machine learning model path
+model_lm = ./models/model.pkl
+# Guide files to be sent with messages
+guidance = guia.pdf
+guidance_rec = guia_rec.pdf
+
+[PATH.LOG]
+# Directory for application logs
+app_log = ./logs
