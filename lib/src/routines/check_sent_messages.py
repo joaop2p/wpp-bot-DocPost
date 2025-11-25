@@ -5,7 +5,7 @@ from lib.config import CONFIG
 from lib.src.controls.file_control import FileControl
 from lib.src.controls.package_control import PackageControl
 from lib.src.models.interfaces.routines import Routine
-from lib.src.utils.generic import ExceptionsMessages
+from ..utils.generic import ExceptionsMessages
 from mytools.structs.files import ProcessesList
 
 class CheckSentMessages(Routine):
